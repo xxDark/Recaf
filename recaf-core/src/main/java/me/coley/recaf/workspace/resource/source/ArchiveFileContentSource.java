@@ -23,7 +23,7 @@ import java.util.zip.ZipOutputStream;
  * @author Matt Coley
  */
 public abstract class ArchiveFileContentSource extends ContainerContentSource<ZipEntry> {
-	private static final int BUFFER_SIZE = (int) Math.pow(2, 20);
+	private static final int BUFFER_SIZE = 1 << 20;
 
 	protected ArchiveFileContentSource(SourceType type, Path path) {
 		super(type, path);
@@ -40,16 +40,17 @@ public abstract class ArchiveFileContentSource extends ContainerContentSource<Zi
 				byte[] out = entry.getValue();
 				// Write directories for upcoming entries if necessary
 				// - Ugly, but does the job.
-				if (key.contains("/")) {
+				int slash = key.lastIndexOf('/');
+				if (slash != -1) {
 					// Record directories
 					String parent = key;
 					List<String> toAdd = new ArrayList<>();
 					do {
-						parent = parent.substring(0, parent.lastIndexOf('/'));
+						parent = parent.substring(0, slash);
 						if (dirsVisited.add(parent)) {
 							toAdd.add(0, parent + '/');
 						} else break;
-					} while (parent.contains("/"));
+					} while ((slash = parent.lastIndexOf('/')) != -1);
 					// Put directories in order of depth
 					for (String dir : toAdd) {
 						zos.putNextEntry(new JarEntry(dir));
@@ -62,8 +63,6 @@ public abstract class ArchiveFileContentSource extends ContainerContentSource<Zi
 				zos.closeEntry();
 			}
 		}
-		fos.flush();
-		fos.close();
 	}
 
 	@Override
@@ -114,7 +113,7 @@ public abstract class ArchiveFileContentSource extends ContainerContentSource<Zi
 
 	private void handle(Path path, BiConsumer<ZipEntry, byte[]> entryHandler, boolean checkHeader) throws IOException {
 		Predicate<ZipEntry> filter = getEntryFilter();
-		try (InputStream stream = new FileInputStream(path.toFile())) {
+		try (InputStream stream = Files.newInputStream(path)) {
 			readFrom(stream, filter, entryHandler);
 		} catch (Exception ex) {
 			logger.debug("Malformed Zip, attempting to patch: {} - {}", path, ex.getMessage());

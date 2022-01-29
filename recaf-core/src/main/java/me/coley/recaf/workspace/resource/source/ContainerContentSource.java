@@ -87,7 +87,7 @@ public abstract class ContainerContentSource<E> extends FileContentSource {
 				resource.getClasses().size(), resource.getClasses().size(), path);
 		logger.info("{}/{} classes have been modified, {}/{} files have been modified",
 				resource.getClasses().size(), dirtyClasses.size(),
-				resource.getClasses().size(), dirtyFiles.size());
+				resource.getFiles().size(), dirtyFiles.size());
 		if (logger.isDebugEnabled()) {
 			dirtyClasses.forEach(name -> logger.debug("Dirty class: " + name));
 			dirtyFiles.forEach(name -> logger.debug("Dirty file: " + name));

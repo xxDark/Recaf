@@ -1,10 +1,6 @@
 package me.coley.recaf.code;
 
-import me.coley.recaf.RecafConstants;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,36 +108,73 @@ public class ClassInfo implements ItemInfo, LiteralInfo, CommonClassInfo {
 		String superName = reader.getSuperName();
 		List<String> interfaces = Arrays.asList(reader.getInterfaces());
 		int access = reader.getAccess();
-		int[] versionWrapper = new int[1];
-		List<FieldInfo> fields = new ArrayList<>();
-		List<MethodInfo> methods = new ArrayList<>();
-		reader.accept(new ClassVisitor(RecafConstants.ASM_VERSION) {
-			@Override
-			public void visit(int version, int access, String name, String signature,
-							  String superName, String[] interfaces) {
-				versionWrapper[0] = version;
-			}
-
-			@Override
-			public FieldVisitor visitField(int access, String name, String descriptor, String sig, Object value) {
-				fields.add(new FieldInfo(className, name, descriptor, access));
-				return null;
-			}
-
-			@Override
-			public MethodVisitor visitMethod(int access, String name, String descriptor, String sig, String[] ex) {
-				methods.add(new MethodInfo(className, name, descriptor, access));
-				return null;
-			}
-		}, ClassReader.SKIP_DEBUG | ClassReader.SKIP_CODE);
+		int version = reader.readInt(reader.getItem(1) - 7);
+		char[] buffer = new char[reader.getMaxStringLength()];
+		int currentOffset = reader.header;
+		// Skip access flag, this, super, interface count.
+		currentOffset += 8;
+		currentOffset += (2 * interfaces.size()); // SKip interfaces.
+		int fieldCount = reader.readUnsignedShort(currentOffset);
+		List<FieldInfo> fields = new ArrayList<>(fieldCount);
+		currentOffset += 2;
+		currentOffset = readFields(reader, fields, className, fieldCount, currentOffset, buffer);
+		int methodCount = reader.readUnsignedShort(currentOffset);
+		List<MethodInfo> methods = new ArrayList<>(methodCount);
+		currentOffset += 2;
+		readMethods(reader, methods, className, methodCount, currentOffset, buffer);
 		return new ClassInfo(
 				className,
 				superName,
 				interfaces,
-				versionWrapper[0],
+				version,
 				access,
 				fields,
 				methods,
 				value);
+	}
+
+	private static int readFields(ClassReader reader,
+								  List<FieldInfo> fields,
+								  String className,
+								  int fieldCount,
+								  int currentOffset, char[] buffer) {
+		for (int i = 0; i < fieldCount; i++) {
+			int fieldAccess = reader.readUnsignedShort(currentOffset);
+			currentOffset += 2;
+			String name = reader.readUTF8(currentOffset, buffer);
+			currentOffset += 2;
+			String desc = reader.readUTF8(currentOffset, buffer);
+			currentOffset += 2;
+			currentOffset = skipAttributes(reader, currentOffset);
+			fields.add(new FieldInfo(className, name, desc, fieldAccess));
+		}
+		return currentOffset;
+	}
+
+	private static void readMethods(ClassReader reader,
+								  List<MethodInfo> fields,
+								  String className,
+								  int fieldCount,
+								  int currentOffset, char[] buffer) {
+		for (int i = 0; i < fieldCount; i++) {
+			int fieldAccess = reader.readUnsignedShort(currentOffset);
+			currentOffset += 2;
+			String name = reader.readUTF8(currentOffset, buffer);
+			currentOffset += 2;
+			String desc = reader.readUTF8(currentOffset, buffer);
+			currentOffset += 2;
+			currentOffset = skipAttributes(reader, currentOffset);
+			fields.add(new MethodInfo(className, name, desc, fieldAccess));
+		}
+	}
+
+	private static int skipAttributes(ClassReader reader, int currentOffset) {
+		int attributes = reader.readUnsignedShort(currentOffset);
+		currentOffset += 2;
+		while (attributes-- != 0) {
+			currentOffset += 2;
+			currentOffset += reader.readInt(currentOffset) + 4;
+		}
+		return currentOffset;
 	}
 }
