@@ -171,6 +171,10 @@ public class ThreadUtil {
 		};
 	}
 
+	public static CountingExecutor countingExecutor() {
+		return new CountingExecutor(scheduledService);
+	}
+
 	/**
 	 * Shutdowns executors.
 	 */

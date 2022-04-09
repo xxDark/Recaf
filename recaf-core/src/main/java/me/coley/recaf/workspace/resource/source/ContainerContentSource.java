@@ -1,10 +1,13 @@
 package me.coley.recaf.workspace.resource.source;
 
+import me.coley.recaf.io.BiResourceConsumer;
 import me.coley.recaf.util.IOUtil;
 import me.coley.recaf.util.StringUtil;
 import me.coley.recaf.util.logging.Logging;
 import me.coley.recaf.code.ClassInfo;
 import me.coley.recaf.code.FileInfo;
+import me.coley.recaf.util.threading.CountingExecutor;
+import me.coley.recaf.util.threading.ThreadUtil;
 import me.coley.recaf.workspace.resource.Resource;
 import org.slf4j.Logger;
 
@@ -15,6 +18,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -37,8 +41,10 @@ public abstract class ContainerContentSource<E> extends FileContentSource {
 	@Override
 	protected void onRead(Resource resource) throws IOException {
 		logger.info("Reading from file: {}", getPath());
-		consumeEach((entry, content) -> {
+		CountingExecutor executor = ThreadUtil.countingExecutor();
+		consumeEach(BiResourceConsumer.async((entry, container) -> {
 			String name = getPathName(entry);
+			byte[] content = container.readAll();
 			if (isClass(entry, content)) {
 				// Check if class can be parsed by ASM
 				try {
@@ -86,7 +92,12 @@ public abstract class ContainerContentSource<E> extends FileContentSource {
 				getListeners().forEach(l -> l.onFileEntry(file));
 				resource.getFiles().initialPut(file);
 			}
-		});
+		}, executor));
+		executor.shutdown();
+		try {
+			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		} catch (InterruptedException ignored) {
+		}
 		// Summarize what has been found
 		logger.info("Read {} classes, {} files", resource.getClasses().size(), resource.getFiles().size());
 	}
@@ -148,7 +159,7 @@ public abstract class ContainerContentSource<E> extends FileContentSource {
 	 * @throws IOException
 	 * 		When the container cannot be read from, or when opening an entry stream fails.
 	 */
-	protected abstract void consumeEach(BiConsumer<E, byte[]> entryHandler) throws IOException;
+	protected abstract void consumeEach(BiResourceConsumer<E> entryHandler) throws IOException;
 
 	/**
 	 * Writes a map to a container destination.

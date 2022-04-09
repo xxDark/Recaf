@@ -32,6 +32,7 @@ subprojects {
     repositories {
         mavenCentral()
         google()
+        mavenLocal()
         maven { url 'https://files.minecraftforge.net/maven' }
         maven { url 'https://jitpack.io' }
     }
@@ -49,7 +50,7 @@ subprojects {
         def jadxVersion = '1.3.3'
         def jpVersion = '3.24.0'
         def junitVersion = '5.8.2'
-        def llzipVersion = '1.0.0'
+        def llzipVersion = '1.1.1'
         aapt = 'com.android.tools.build:aapt2-proto:7.1.2-7984345'
         asm = "org.ow2.asm:asm:$asmVersion"
         asm_analysis = "org.ow2.asm:asm-analysis:$asmVersion"
@@ -76,7 +77,7 @@ subprojects {
         junit_engine = "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
         junit_params = "org.junit.jupiter:junit-jupiter-params:$junitVersion"
         logback_classic = 'ch.qos.logback:logback-classic:1.2.10'
-        llzip = "com.github.Col-E:LL-Java-Zip:$llzipVersion"
+        llzip = "software.coley:lljzip:$llzipVersion"
         pe = 'com.github.cademtz:JavaPeParser:1.0.0'
         javassist = 'org.javassist:javassist:3.28.0-GA'
         jelf = 'net.fornwall:jelf:0.7.0'

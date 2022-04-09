@@ -1,7 +1,6 @@
 package me.coley.recaf.workspace.resource.source;
 
 import me.coley.recaf.util.ByteHeaderUtil;
-import me.coley.recaf.util.visitor.ValidationClassReader;
 import me.coley.recaf.util.visitor.ValidationVisitor;
 import org.objectweb.asm.ClassReader;
 
@@ -61,7 +60,7 @@ public abstract class FileContentSource extends ContentSource {
 	 */
 	protected static boolean isParsableClass(byte[] content) {
 		try {
-			new ValidationClassReader(content).accept(new ValidationVisitor(), 0);
+			new ClassReader(content).accept(new ValidationVisitor(), 0);
 			return true;
 		} catch (Exception ex) {
 			return false;

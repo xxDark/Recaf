@@ -185,7 +185,7 @@ public class ResourceItemMap<I extends ItemInfo> implements Map<String, I> {
 	 * @param itemInfo
 	 * 		Item to put.
 	 */
-	public void initialPut(I itemInfo) {
+	public synchronized void initialPut(I itemInfo) {
 		backing.put(itemInfo.getName(), itemInfo);
 		initHistory(itemInfo);
 	}

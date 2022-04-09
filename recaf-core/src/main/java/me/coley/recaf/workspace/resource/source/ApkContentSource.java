@@ -43,7 +43,7 @@ public class ApkContentSource extends ArchiveFileContentSource {
 			if (name.endsWith(".dex")) {
 				// TODO: Is there a way to determine what the correct API version is?
 				Opcodes opcodes = Opcodes.getDefault();
-				try (InputStream inputStream = new ByteArrayInputStream(content)) {
+				try (InputStream inputStream = new ByteArrayInputStream(content.readAll())) {
 					DexBackedDexFile file = DexBackedDexFile.fromInputStream(opcodes, inputStream);
 					DexClassMap map = resource.getDexClasses().getBackingMap()
 							.computeIfAbsent(name, k -> new DexClassMap(resource, opcodes));
@@ -57,11 +57,11 @@ public class ApkContentSource extends ArchiveFileContentSource {
 				}
 			} else if (name.endsWith(".arsc")) {
 				// TODO: arsc resource extraction
-				FileInfo file = new FileInfo(name, content);
+				FileInfo file = new FileInfo(name, content.readAll());
 				getListeners().forEach(l -> l.onFileEntry(file));
 				resource.getFiles().initialPut(file);
 			} else {
-				FileInfo file = new FileInfo(name, content);
+				FileInfo file = new FileInfo(name, content.readAll());
 				getListeners().forEach(l -> l.onFileEntry(file));
 				resource.getFiles().initialPut(file);
 			}

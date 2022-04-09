@@ -1,5 +1,6 @@
 package me.coley.recaf.workspace.resource.source;
 
+import me.coley.recaf.io.BiResourceConsumer;
 import me.coley.recaf.util.IOUtil;
 
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 /**
@@ -40,20 +40,18 @@ public class DirectoryContentSource extends ContainerContentSource<Path> {
 	}
 
 	@Override
-	protected void consumeEach(BiConsumer<Path, byte[]> entryHandler) throws IOException {
+	protected void consumeEach(BiResourceConsumer<Path> entryHandler) throws IOException {
 		Predicate<Path> predicate = getEntryFilter();
 		Files.walkFileTree(getPath(), new SimpleFileVisitor<Path>() {
-
-			private final byte[] buffer = IOUtil.newByteBuffer();
 
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				if (predicate.test(file)) {
-					byte[] content;
-					try (InputStream in = Files.newInputStream(file)) {
-						content = IOUtil.toByteArray(in, buffer);
-					}
-					entryHandler.accept(file, content);
+					entryHandler.accept(file, () -> {
+						try (InputStream in = Files.newInputStream(file)) {
+							return IOUtil.toByteArray(in);
+						}
+					});
 				}
 				return FileVisitResult.CONTINUE;
 			}
