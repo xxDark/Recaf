@@ -16,11 +16,19 @@ test {
     useJUnitPlatform()
 }
 
+repositories {
+    maven {
+        url 'https://maven.fabricmc.net/'
+    }
+}
+
 dependencies {
     implementation project(':recaf-core')
     implementation project(':recaf-plugin')
+    implementation project(':recaf-mixin')
     implementation docking
     implementation richtextfx
+    implementation mixin
 
     implementation 'com.github.Col-E:fxgraph:0.0.4'
     implementation pe
@@ -74,5 +82,5 @@ private static def getJavaFxPlatform() {
 }
 
 jar {
-    manifest.attributes('Main-Class': mainClassName)
+    manifest.attributes 'Main-Class': mainClassName, 'MixinConfigs': 'mixin.decompilers.json'
 }

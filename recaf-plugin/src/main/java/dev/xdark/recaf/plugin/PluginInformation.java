@@ -8,7 +8,7 @@ package dev.xdark.recaf.plugin;
 public final class PluginInformation {
 	private final String name;
 	private final String version;
-	private final String author;
+	private final String[] authors;
 	private final String description;
 
 	/**
@@ -16,15 +16,15 @@ public final class PluginInformation {
 	 * 		name of the plugin.
 	 * @param version
 	 * 		plugin version.
-	 * @param author
-	 * 		author of the plugin.
+	 * @param authors
+	 * 		authors of the plugin.
 	 * @param description
 	 * 		plugin description.
 	 */
-	public PluginInformation(String name, String version, String author, String description) {
+	public PluginInformation(String name, String version, String[] authors, String description) {
 		this.name = name;
 		this.version = version;
-		this.author = author;
+		this.authors = authors;
 		this.description = description;
 	}
 
@@ -45,8 +45,8 @@ public final class PluginInformation {
 	/**
 	 * @return author of the plugin.
 	 */
-	public String getAuthor() {
-		return author;
+	public String[] getAuthors() {
+		return authors;
 	}
 
 	/**

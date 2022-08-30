@@ -10,7 +10,3 @@ dependencies {
     testImplementation junit_params
     testRuntimeOnly junit_engine
 }
-
-test {
-    useJUnitPlatform()
-}

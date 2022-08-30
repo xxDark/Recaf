@@ -57,6 +57,11 @@ subprojects {
         }
     }
 
+    configurations {
+        bundle
+        implementation.extendsFrom bundle
+    }
+
     project.ext {
         def asmVersion = '9.3'
         def dexVersion = '2.5.2'
@@ -106,5 +111,6 @@ subprojects {
         ssvm = "com.github.xxdark:ssvm:$ssvmVersion"
         procyon_core = "org.bitbucket.mstrobel:procyon-core:$procyonVersion"
         procyon_compiler_tools = "org.bitbucket.mstrobel:procyon-compilertools:$procyonVersion"
+        mixin = 'net.fabricmc:sponge-mixin:0.11.4+mixin.0.8.5'
     }
 }

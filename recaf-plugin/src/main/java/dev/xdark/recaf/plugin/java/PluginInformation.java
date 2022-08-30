@@ -27,7 +27,7 @@ public @interface PluginInformation {
 	/**
 	 * @return author of the plugin.
 	 */
-	String author() default "";
+	String[] authors() default {};
 
 	/**
 	 * @return description of the plugin.

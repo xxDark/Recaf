@@ -46,7 +46,7 @@ public class OfficialPluginRepository implements PluginRepository {
 					String author = getAuthor(releases);
 					// TODO: If the download link does not exist, is there still the need for display ?
 					URI uri = getDownloadUrl(releases).map(URI::create).orElse(null);
-					pluginItems.add(new PluginRepositoryItem(uri, name, version, author, description));
+					pluginItems.add(new PluginRepositoryItem(uri, name, version, new String[]{author}, description));
 				}
 			} else {
 				logger.error("Bad request with code {} and message for [{}]", httpResponse.statusCode(), httpResponse.body());

@@ -1,39 +1,33 @@
 package dev.xdark.recaf.plugin;
 
-import java.io.IOException;
+import me.coley.recaf.classloading.ClassLoaderGroup;
+import me.coley.recaf.classloading.EnhancedClassLoader;
+
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@link ClassLoader} designed specifically for plugins.
  *
  * @author xDark
  */
-public final class PluginClassLoader extends URLClassLoader {
-	private static final Set<PluginClassLoader> ALL_LOADERS = ConcurrentHashMap.newKeySet();
-	private final ClassLoader parent;
+public final class PluginClassLoader extends EnhancedClassLoader {
+	private final ClassLoaderGroup<PluginClassLoader> group;
 
 	/**
+	 * @param group
+	 * 		Class loader group.
 	 * @param urls
 	 *        {@link URL[]} array used for classpath.
 	 * @param parent
 	 * 		Parent {@link ClassLoader}.
 	 */
-	public PluginClassLoader(URL[] urls, ClassLoader parent) {
-		super(urls, null);
-		this.parent = parent;
+	public PluginClassLoader(ClassLoaderGroup<PluginClassLoader> group, URL[] urls, ClassLoader parent) {
+		super(urls, parent);
+		this.group = group;
 	}
 
 	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		try {
-			// We prioritize our classes over others.
-			return super.findClass(name);
-		} catch (ClassNotFoundException ignored) {
-		}
-
+	protected Class<?> altFindClass(String name) throws ClassNotFoundException {
 		// Try parent class loader first.
 		try {
 			return parent.loadClass(name);
@@ -41,14 +35,16 @@ public final class PluginClassLoader extends URLClassLoader {
 		}
 
 		// Now, try all other loaders.
-		for (PluginClassLoader loader : ALL_LOADERS) {
+		for (PluginClassLoader loader : group) {
+			if (loader == this) {
+				continue;
+			}
 			try {
 				return loader.lookupClass(name);
 			} catch (ClassNotFoundException ignored) {
 			}
 		}
 
-		// That's an unfortunate.
 		throw new ClassNotFoundException(name);
 	}
 
@@ -57,33 +53,7 @@ public final class PluginClassLoader extends URLClassLoader {
 	 * existing loaders.
 	 */
 	public void register() {
-		ALL_LOADERS.add(this);
-	}
-
-	@Override
-	public void close() throws IOException {
-		try {
-			super.close();
-		} finally {
-			ALL_LOADERS.remove(this);
-		}
-	}
-
-	/**
-	 * Helper method to locate a class directly
-	 * in this loader.
-	 *
-	 * @param name
-	 * 		the name of the class.
-	 *
-	 * @return the resulting class.
-	 *
-	 * @throws ClassNotFoundException
-	 * 		if the class could not be found,
-	 * 		or if the loader is closed.
-	 */
-	public Class<?> lookupClass(String name) throws ClassNotFoundException {
-		return super.findClass(name);
+		group.add(this);
 	}
 
 	static {

@@ -13,11 +13,9 @@ import me.coley.recaf.decompile.fallback.model.FieldModel;
 import me.coley.recaf.decompile.fallback.model.MethodModel;
 import me.coley.recaf.util.AccessFlag;
 import me.coley.recaf.util.EscapeUtil;
-import me.coley.recaf.util.StringUtil;
 import org.objectweb.asm.Type;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;

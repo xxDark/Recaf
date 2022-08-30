@@ -11,7 +11,7 @@ public class PluginRepositoryItem {
 	protected final URI uri;
 	protected final String name;
 	protected final String version;
-	protected final String author;
+	protected final String[] authors;
 	protected final String description;
 
 	/**
@@ -21,16 +21,16 @@ public class PluginRepositoryItem {
 	 * 		Name of the plugin.
 	 * @param version
 	 * 		Plugin version.
-	 * @param author
-	 * 		Author of the plugin.
+	 * @param authors
+	 * 		Authors of the plugin.
 	 * @param description
 	 * 		Plugin description.
 	 */
-	public PluginRepositoryItem(URI uri, String name, String version, String author, String description) {
+	public PluginRepositoryItem(URI uri, String name, String version, String[] authors, String description) {
 		this.uri = uri;
 		this.name = name;
 		this.version = version;
-		this.author = author;
+		this.authors = authors;
 		this.description = description;
 	}
 
@@ -56,10 +56,10 @@ public class PluginRepositoryItem {
 	}
 
 	/**
-	 * @return Author of the plugin.
+	 * @return Authors of the plugin.
 	 */
-	public String getAuthor() {
-		return author;
+	public String[] getAuthors() {
+		return authors;
 	}
 
 	/**

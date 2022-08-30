@@ -34,7 +34,7 @@ public class RemotePluginItem extends PluginRepositoryItem {
 	 * 		Item to copy information from.
 	 */
 	public RemotePluginItem(PluginRepositoryItem item) {
-		this(item.getUri(), item.getName(), item.getVersion(), item.getAuthor(), item.getDescription());
+		this(item.getUri(), item.getName(), item.getVersion(), item.getAuthors(), item.getDescription());
 	}
 
 	/**
@@ -44,13 +44,13 @@ public class RemotePluginItem extends PluginRepositoryItem {
 	 * 		name of the plugin.
 	 * @param version
 	 * 		plugin version.
-	 * @param author
-	 * 		author of the plugin.
+	 * @param authors
+	 * 		authors of the plugin.
 	 * @param description
 	 * 		plugin description.
 	 */
-	public RemotePluginItem(URI uri, String name, String version, String author, String description) {
-		super(uri, name, version, author, description);
+	public RemotePluginItem(URI uri, String name, String version, String[] authors, String description) {
+		super(uri, name, version, authors, description);
 	}
 
 	/**

@@ -1,17 +1,12 @@
 package me.coley.recaf.decompile.fallback.print;
 
 import me.coley.cafedude.classfile.ConstPool;
-import me.coley.cafedude.classfile.annotation.Annotation;
-import me.coley.cafedude.classfile.annotation.AnnotationElementValue;
-import me.coley.cafedude.classfile.annotation.ArrayElementValue;
-import me.coley.cafedude.classfile.annotation.ClassElementValue;
-import me.coley.cafedude.classfile.annotation.ElementValue;
-import me.coley.cafedude.classfile.annotation.EnumElementValue;
-import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
-import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
-import me.coley.cafedude.classfile.constant.*;
+import me.coley.cafedude.classfile.annotation.*;
+import me.coley.cafedude.classfile.constant.CpDouble;
+import me.coley.cafedude.classfile.constant.CpFloat;
+import me.coley.cafedude.classfile.constant.CpInt;
+import me.coley.cafedude.classfile.constant.CpLong;
 import me.coley.recaf.util.EscapeUtil;
-import me.coley.recaf.util.StringUtil;
 import me.coley.recaf.util.Types;
 import org.objectweb.asm.Type;
 

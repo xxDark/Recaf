@@ -22,14 +22,20 @@ public class ClassLoaderInternals {
 	public static Object getUcp() throws ReflectiveOperationException {
 		// Fetch UCP of application's ClassLoader
 		// - ((ClassLoaders.AppClassLoader) ClassLoaders.appClassLoader()).ucp
-		Class<?> clsClassLoaders = Class.forName("jdk.internal.loader.ClassLoaders");
-		Object appClassLoader = clsClassLoaders.getDeclaredMethod("appClassLoader").invoke(null);
+		ClassLoader appClassLoader = ClassLoaderInternals.class.getClassLoader();
 		Class<?> ucpOwner = appClassLoader.getClass();
-		// Field removed in 16, but still exists in parent class "BuiltinClassLoader"
-		if (JavaVersion.get() >= 16)
-			ucpOwner = ucpOwner.getSuperclass();
-		Field fieldUCP = ReflectUtil.getDeclaredField(ucpOwner, "ucp");
-		return fieldUCP.get(appClassLoader);
+		Field ucpField = null;
+		do {
+			try {
+				ucpField = ReflectUtil.getDeclaredField(ucpOwner, "ucp");
+			} catch (NoSuchFieldException ignored) {
+				ucpOwner = ucpOwner.getSuperclass();
+			}
+		} while (ucpField == null && ucpOwner != null);
+		if (ucpField == null) {
+			throw new RuntimeException("JDK internals changed");
+		}
+		return ucpField.get(appClassLoader);
 	}
 
 	/**

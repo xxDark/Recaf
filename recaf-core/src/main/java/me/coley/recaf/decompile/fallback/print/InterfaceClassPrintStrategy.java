@@ -3,8 +3,6 @@ package me.coley.recaf.decompile.fallback.print;
 import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.recaf.decompile.fallback.model.ClassModel;
 import me.coley.recaf.util.AccessFlag;
-import me.coley.recaf.util.EscapeUtil;
-import me.coley.recaf.util.StringUtil;
 
 import java.util.Set;
 import java.util.stream.Collectors;

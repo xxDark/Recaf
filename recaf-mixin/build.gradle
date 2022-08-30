@@ -1,0 +1,10 @@
+repositories {
+    maven {
+        url 'https://maven.fabricmc.net/'
+    }
+}
+
+dependencies {
+    compileOnly project(':recaf-core')
+    compileOnly mixin
+}

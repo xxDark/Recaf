@@ -28,7 +28,7 @@ public class InstalledPluginItem extends PluginRepositoryItem {
 	 * 		Plugin information wrapper.
 	 */
 	public InstalledPluginItem(URI uri, PluginInformation info) {
-		this(uri, info.getName(), info.getVersion(), info.getAuthor(), info.getDescription());
+		this(uri, info.getName(), info.getVersion(), info.getAuthors(), info.getDescription());
 	}
 
 	/**
@@ -38,13 +38,13 @@ public class InstalledPluginItem extends PluginRepositoryItem {
 	 * 		name of the plugin.
 	 * @param version
 	 * 		plugin version.
-	 * @param author
-	 * 		author of the plugin.
+	 * @param authors
+	 * 		authors of the plugin.
 	 * @param description
 	 * 		plugin description.
 	 */
-	public InstalledPluginItem(URI uri, String name, String version, String author, String description) {
-		super(uri, name, version, author, description);
+	public InstalledPluginItem(URI uri, String name, String version, String[] authors, String description) {
+		super(uri, name, version, authors, description);
 	}
 
 	/**

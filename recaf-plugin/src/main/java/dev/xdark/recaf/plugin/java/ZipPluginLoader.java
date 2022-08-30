@@ -7,6 +7,7 @@ import dev.xdark.recaf.plugin.PluginLoadException;
 import dev.xdark.recaf.plugin.PluginLoader;
 import dev.xdark.recaf.plugin.UnsupportedSourceException;
 import me.coley.recaf.RecafConstants;
+import me.coley.recaf.classloading.ClassLoaderGroup;
 import me.coley.recaf.io.ByteSource;
 import me.coley.recaf.util.ByteHeaderUtil;
 import me.coley.recaf.util.CancelSignal;
@@ -42,6 +43,7 @@ public final class ZipPluginLoader implements PluginLoader {
 	private static final String INFORMATION_DESCRIPTOR = Type.getDescriptor(PluginInformation.class);
 	private static final Logger logger = Logging.get(ZipPluginLoader.class);
 
+	private final ClassLoaderGroup<PluginClassLoader> group = new ClassLoaderGroup<>();
 	private final ClassLoader primaryClassLoader;
 
 	/**
@@ -106,7 +108,7 @@ public final class ZipPluginLoader implements PluginLoader {
 				};
 			}
 		});
-		PluginClassLoader classLoader = new PluginClassLoader(new URL[]{url}, primaryClassLoader);
+		PluginClassLoader classLoader = new PluginClassLoader(group, new URL[]{url}, primaryClassLoader);
 		try {
 			// Load plugin entrypoint.
 			Class<?> entrypoint;
@@ -125,6 +127,8 @@ public final class ZipPluginLoader implements PluginLoader {
 			} catch(IllegalStateException ex) {
 				throw new PluginLoadException("Could not read plugin information", ex);
 			}
+			// Don't forget to register a loader.
+			classLoader.register();
 			// Actually create plugin instance.
 			T plugin;
 			try {
@@ -132,17 +136,16 @@ public final class ZipPluginLoader implements PluginLoader {
 			} catch(ReflectiveOperationException ex) {
 				throw new PluginLoadException("Could not create plugin instance", ex);
 			}
-			// Don't forget to register a loader.
-			classLoader.register();
 			classLoader = null;
 			logger.info("Loaded plugin {} v{} by {}", information.getName(),
-					information.getVersion(), information.getAuthor());
+					information.getVersion(), String.join(", ", information.getAuthors()));
 			return new PluginContainer<>(plugin, information, this);
 		} finally {
 			if (classLoader != null) {
 				// Something went wrong during plugin loading,
 				// so don't leak a loader.
 				IOUtil.closeQuietly(classLoader);
+				group.remove(classLoader);
 			}
 		}
 	}
@@ -171,14 +174,20 @@ public final class ZipPluginLoader implements PluginLoader {
 		if (!(classLoader instanceof PluginClassLoader)) {
 			throw new IllegalStateException("Plugin does not belong to ZipPluginLoader");
 		}
+		PluginClassLoader pcl = (PluginClassLoader) classLoader;
+		if (!group.has(pcl)) {
+			throw new IllegalStateException("Class loader does not belong to the correct group");
+		}
 		logger.info("Disabling plugin {}", container.getInformation().getName());
 		try {
 			plugin.onDisable();
 		} finally {
 			try {
-				((PluginClassLoader) classLoader).close();
+				pcl.close();
 			} catch(IOException ex) {
 				logger.warn("Could not close plugin class loader", ex);
+			} finally {
+				group.remove(pcl);
 			}
 		}
 	}
@@ -228,7 +237,7 @@ public final class ZipPluginLoader implements PluginLoader {
 			throw new IllegalStateException("@PluginInformation is missing on " + type);
 		}
 		return new dev.xdark.recaf.plugin.PluginInformation(annotation.name(),
-				annotation.version(), annotation.author(), annotation.description());
+				annotation.version(), annotation.authors(), annotation.description());
 	}
 
 	private static final class PluginAnnotationVisitor extends ClassVisitor {

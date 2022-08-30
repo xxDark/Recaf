@@ -31,8 +31,6 @@ public class GuiPresentation implements Presentation {
 	public void initialize(Controller controller) {
 		this.controller = controller;
 		RecafUI.set(controller);
-		// Patch JDK restrictions
-		AccessPatcher.patch();
 		// Setup JavaFX
 		JFXInjection.ensureJavafxSupport();
 		// Load translations

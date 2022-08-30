@@ -123,13 +123,13 @@ public class PluginManagerPane extends BorderPane {
 				info.getChildren().add(nameLabel);
 
 				String description = pluginItem.getDescription();
-				String author = pluginItem.getAuthor();
+				String[] authors = pluginItem.getAuthors();
 				String version = pluginItem.getVersion();
 
 				if (description != null)
 					info.getChildren().add(Labels.makeAttribLabel(null, description));
-				if (author != null)
-					info.getChildren().add(Labels.makeAttribLabel(Lang.getBinding("menu.scripting.author"), author));
+				if (authors != null)
+					info.getChildren().add(Labels.makeAttribLabel(Lang.getBinding("menu.scripting.author"), String.join(",", authors)));
 				if (version != null)
 					info.getChildren().add(Labels.makeAttribLabel(Lang.getBinding("menu.scripting.version"), version));
 
