@@ -125,8 +125,7 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 			URL url = findResource(path);
 			if (url != null) {
 				int lastDot = name.lastIndexOf('.');
-				CodeSource cs = new CodeSource(url, (Certificate[]) null);
-				CodeSource finalCodeSource = cs;
+				CodeSource cs = null;
 				try {
 					URLConnection connection = url.openConnection();
 					connection.setUseCaches(false);
@@ -134,7 +133,8 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 					if (connection instanceof JarURLConnection) {
 						JarURLConnection juc = (JarURLConnection) connection;
 						Certificate[] certificates = juc.getCertificates();
-						finalCodeSource = new CodeSource(url, certificates);
+						url = juc.getJarFileURL(); // Force url to base url
+						cs = new CodeSource(url, certificates);
 						if (lastDot != -1) {
 							String packageName = name.substring(0, lastDot);
 							if (getDefinedPackage(packageName) == null) {
@@ -156,11 +156,11 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 					}
 					ClassDefinition definition = new ClassDefinition(source);
 					ClassDefinition newDefinition = cli.applyTransformers(definition);
-					if (newDefinition != definition) {
-						finalCodeSource = cs; // Erase certificates
+					if (cs == null || (newDefinition != definition && cs.getCertificates() != null)) {
+						cs = new CodeSource(url, (Certificate[]) null); // Erase certificates
 					}
 					byte[] bytes = definition.getBytecode().readAll();
-					return defineClass(null, bytes, 0, bytes.length, finalCodeSource);
+					return defineClass(null, bytes, 0, bytes.length, cs);
 				} catch (IOException ex) {
 					throw new ClassNotFoundException(name, ex);
 				}
