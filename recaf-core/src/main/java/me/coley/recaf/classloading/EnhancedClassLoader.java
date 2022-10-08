@@ -219,8 +219,4 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 		}
 		return path.toArray(new URL[0]);
 	}
-
-	static {
-		ClassLoader.registerAsParallelCapable();
-	}
 }
