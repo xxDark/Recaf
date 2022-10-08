@@ -1,7 +1,8 @@
 package dev.xdark.recaf.mixin;
 
 import me.coley.recaf.classloading.ClassDefinition;
-import me.coley.recaf.classloading.ClassLoaderInterface;
+import me.coley.recaf.classloading.ClasspathInterface;
+import me.coley.recaf.classloading.TransformerInterface;
 import me.coley.recaf.io.ByteSources;
 import me.coley.recaf.util.IOUtil;
 import org.objectweb.asm.ClassReader;
@@ -28,11 +29,13 @@ import java.util.List;
 public final class MixinServiceRecaf extends MixinServiceAbstract implements
 		IClassProvider, IClassBytecodeProvider,
 		ITransformerProvider {
-	private final ClassLoaderInterface cli;
+	private final TransformerInterface transformerInterface;
+	private final ClasspathInterface classpathInterface;
 
 	public MixinServiceRecaf() {
 		MixinThreadState state = MixinThreadState.get();
-		cli = state.getClassLoaderInterface();
+		transformerInterface = state.getTransformerInterface();
+		classpathInterface = state.getClasspathInterface();
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public final class MixinServiceRecaf extends MixinServiceAbstract implements
 	public void offer(IMixinInternal internal) {
 		if (internal instanceof IMixinTransformerFactory) {
 			IMixinTransformer transformer = ((IMixinTransformerFactory) internal).createTransformer();
-			cli.registerTransformer(definition -> {
+			transformerInterface.registerTransformer(definition -> {
 				ClassReader reader = definition.getReader();
 				String name = reader.getClassName().replace('/', '.');
 				byte[] bc = definition.getRawBytecode();
@@ -110,7 +113,7 @@ public final class MixinServiceRecaf extends MixinServiceAbstract implements
 
 	@Override
 	public InputStream getResourceAsStream(String name) {
-		return cli.getResourceAsStream(name);
+		return classpathInterface.getResourceAsStream(name);
 	}
 
 	@Override
@@ -120,8 +123,7 @@ public final class MixinServiceRecaf extends MixinServiceAbstract implements
 
 	@Override
 	public ClassNode getClassNode(String name, boolean runTransformers) throws ClassNotFoundException, IOException {
-		ClassLoaderInterface cli = this.cli;
-		URL url = cli.getResource(name.replace('.', '/').concat(".class"));
+		URL url = classpathInterface.getResource(name.replace('.', '/').concat(".class"));
 		if (url == null) {
 			throw new ClassNotFoundException(name);
 		}
@@ -129,7 +131,7 @@ public final class MixinServiceRecaf extends MixinServiceAbstract implements
 		try (InputStream in = url.openStream()) {
 			if (runTransformers) {
 				ClassDefinition definition = new ClassDefinition(ByteSources.wrap(IOUtil.toByteArray(in)));
-				definition = cli.applyTransformers(definition);
+				definition = transformerInterface.applyTransformers(definition);
 				reader = definition.getReader();
 			} else {
 				reader = new ClassReader(in);
@@ -142,7 +144,7 @@ public final class MixinServiceRecaf extends MixinServiceAbstract implements
 
 	@Override
 	public URL[] getClassPath() {
-		return cli.getClassPath();
+		return classpathInterface.getClassPath();
 	}
 
 	@Override
@@ -182,13 +184,13 @@ public final class MixinServiceRecaf extends MixinServiceAbstract implements
 
 	@Override
 	public void addTransformerExclusion(String name) {
-		cli.addTransformerExclusion(name);
+		transformerInterface.addTransformerExclusion(name);
 	}
 
 	@Override
 	public Collection<IContainerHandle> getMixinContainers() {
 		List<IContainerHandle> containers = new ArrayList<>();
-		for (URL url : cli.getClassPath()) {
+		for (URL url : classpathInterface.getClassPath()) {
 			URI uri;
 			try {
 				uri = url.toURI();

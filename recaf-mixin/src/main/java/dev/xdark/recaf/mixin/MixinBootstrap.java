@@ -21,7 +21,7 @@ public final class MixinBootstrap {
 
 	public static void bootstrap(List<String> args) {
 		ClassLoaderInterface cli = (ClassLoaderInterface) MixinBootstrap.class.getClassLoader();
-		MixinThreadState.set(new MixinThreadState(cli));
+		MixinThreadState.set(new MixinThreadState(cli.getTransformerInterface(), cli.getClasspathInterface()));
 		Properties properties = System.getProperties();
 		synchronized (properties) {
 			properties.put(BOOTSTRAP_PROPERTY, MixinServiceRecafBootstrap.class.getName());

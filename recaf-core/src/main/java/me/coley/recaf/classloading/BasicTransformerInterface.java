@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 
-public abstract class AbstractClassLoaderInterface implements ClassLoaderInterface {
+public class BasicTransformerInterface implements TransformerInterface {
 	private final List<ClassFileTransformer> transformers = Collections.synchronizedList(new ArrayList<>());
 	private final Set<Predicate<String>> transformExclusions = new HashSet<>();
 	private final Set<Predicate<String>> loadingExclusions = new HashSet<>();

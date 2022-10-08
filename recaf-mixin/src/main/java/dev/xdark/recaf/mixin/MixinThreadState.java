@@ -1,6 +1,7 @@
 package dev.xdark.recaf.mixin;
 
-import me.coley.recaf.classloading.ClassLoaderInterface;
+import me.coley.recaf.classloading.ClasspathInterface;
+import me.coley.recaf.classloading.TransformerInterface;
 
 /**
  * Mixin thread state.
@@ -10,18 +11,26 @@ import me.coley.recaf.classloading.ClassLoaderInterface;
 public final class MixinThreadState {
 	private static final ThreadLocal<MixinThreadState> TLC = new ThreadLocal<>();
 
-	private final ClassLoaderInterface classLoaderInterface;
+	private final TransformerInterface transformerInterface;
+	private final ClasspathInterface classpathInterface;
 
 	/**
-	 * @param classLoaderInterface
-	 * 		Class loader interface.
+	 * @param transformerInterface
+	 * 		Transformer interface.
+	 * @param classpathInterface
+	 * 		Classpath interface.
 	 */
-	public MixinThreadState(ClassLoaderInterface classLoaderInterface) {
-		this.classLoaderInterface = classLoaderInterface;
+	public MixinThreadState(TransformerInterface transformerInterface, ClasspathInterface classpathInterface) {
+		this.transformerInterface = transformerInterface;
+		this.classpathInterface = classpathInterface;
 	}
 
-	public ClassLoaderInterface getClassLoaderInterface() {
-		return classLoaderInterface;
+	public TransformerInterface getTransformerInterface() {
+		return transformerInterface;
+	}
+
+	public ClasspathInterface getClasspathInterface() {
+		return classpathInterface;
 	}
 
 	public static void set(MixinThreadState state) {

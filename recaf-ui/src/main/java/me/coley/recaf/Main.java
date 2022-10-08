@@ -1,6 +1,7 @@
 package me.coley.recaf;
 
 import me.coley.recaf.classloading.EnhancedClassLoader;
+import me.coley.recaf.classloading.TransformerInterface;
 
 import java.lang.reflect.Method;
 
@@ -26,10 +27,11 @@ public class Main {
 		ClassLoader cl = Main.class.getClassLoader();
 		String cp = System.getProperty("java.class.path");
 		EnhancedClassLoader classLoader = new EnhancedClassLoader(EnhancedClassLoader.parse(cp), cl);
-		classLoader.addLoadingExclusion("org.objectweb.asm.");
-		classLoader.addLoadingExclusion("me.coley.recaf.io.");
-		classLoader.addLoadingExclusion("me.coley.recaf.classloading.");
-		classLoader.addTransformerExclusion("org.spongepowered.");
+		TransformerInterface ti = classLoader.getTransformerInterface();
+		ti.addLoadingExclusion("org.objectweb.asm.");
+		ti.addLoadingExclusion("me.coley.recaf.io.");
+		ti.addLoadingExclusion("me.coley.recaf.classloading.");
+		ti.addTransformerExclusion("org.spongepowered.");
 		Method m = Class.forName("me.coley.recaf.RecafMain", true, classLoader)
 				.getDeclaredMethod("main", String[].class);
 		m.setAccessible(true);

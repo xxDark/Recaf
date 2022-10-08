@@ -14,37 +14,32 @@ import java.net.URLConnection;
 import java.security.CodeSource;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderInterface {
 	protected final ClassLoader parent;
-	protected ClassLoaderInterface cli;
+	protected TransformerInterface transformerInterface;
+	protected ClasspathInterface classpathInterface;
 
 	public EnhancedClassLoader(URL[] urls, ClassLoader parent) {
 		super(urls, null);
 		this.parent = parent;
-		cli = new AbstractClassLoaderInterface() {
+		transformerInterface = new BasicTransformerInterface();
+		classpathInterface = new ClasspathInterface() {
 			@Override
 			public URL[] getClassPath() {
-				throw new UnsupportedOperationException("Should never be called");
+				return EnhancedClassLoader.this.getURLs();
 			}
 
 			@Override
 			public InputStream getResourceAsStream(String path) {
-				throw new UnsupportedOperationException("Should never be called");
+				return EnhancedClassLoader.this.getResourceAsStream(path);
 			}
 
 			@Override
 			public URL getResource(String path) {
-				throw new UnsupportedOperationException("Should never be called");
-			}
-
-			@Override
-			public Class<?> defineNewClass(String className, byte[] bytes, int off, int len) {
-				throw new UnsupportedOperationException("Should never be called");
+				return EnhancedClassLoader.this.getResource(path);
 			}
 		};
 	}
@@ -54,67 +49,22 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 	}
 
 	@Override
-	public ClassDefinition applyTransformers(ClassDefinition definition) throws IOException {
-		return cli.applyTransformers(definition);
+	public TransformerInterface getTransformerInterface() {
+		return transformerInterface;
 	}
 
 	@Override
-	public URL[] getClassPath() {
-		return getURLs();
-	}
-
-	@Override
-	public void registerTransformer(ClassFileTransformer transformer) {
-		cli.registerTransformer(transformer);
-	}
-
-	@Override
-	public void removeTransformer(ClassFileTransformer transformer) {
-		cli.removeTransformer(transformer);
-	}
-
-	@Override
-	public void addTransformerExclusion(Predicate<String> exclusion) {
-		cli.addTransformerExclusion(exclusion);
-	}
-
-	@Override
-	public void addTransformerExclusion(Collection<String> exclusions) {
-		cli.addTransformerExclusion(exclusions);
-	}
-
-	@Override
-	public void addLoadingExclusion(Predicate<String> exclusion) {
-		cli.addLoadingExclusion(exclusion);
-	}
-
-	@Override
-	public void addLoadingExclusion(Collection<String> exclusions) {
-		cli.addLoadingExclusion(exclusions);
-	}
-
-	@Override
-	public boolean isTransformationExcluded(String className) {
-		return cli.isTransformationExcluded(className);
-	}
-
-	@Override
-	public boolean isLoadingExcluded(String className) {
-		return cli.isLoadingExcluded(className);
-	}
-
-	@Override
-	public Class<?> defineNewClass(String className, byte[] bytes, int off, int len) {
-		return defineClass(className, bytes, off, len);
+	public ClasspathInterface getClasspathInterface() {
+		return classpathInterface;
 	}
 
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		ClassLoaderInterface cli = this.cli;
+		TransformerInterface ti = this.transformerInterface;
 		load:
-		if (!cli.isLoadingExcluded(name)) {
+		if (!ti.isLoadingExcluded(name)) {
 			// We prioritize our classes over others.
-			if (cli.isTransformationExcluded(name)) {
+			if (ti.isTransformationExcluded(name)) {
 				try {
 					return super.findClass(name);
 				} catch (ClassNotFoundException ignored) {
@@ -155,7 +105,7 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 						source = ByteSources.wrap(bc);
 					}
 					ClassDefinition definition = new ClassDefinition(source);
-					ClassDefinition newDefinition = cli.applyTransformers(definition);
+					ClassDefinition newDefinition = ti.applyTransformers(definition);
 					if (cs == null || (newDefinition != definition && cs.getCertificates() != null)) {
 						cs = new CodeSource(url, (Certificate[]) null); // Erase certificates
 					}
@@ -174,7 +124,7 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 		try {
 			super.close();
 		} finally {
-			cli = null;
+			transformerInterface = null;
 		}
 	}
 
