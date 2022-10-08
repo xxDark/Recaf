@@ -3,6 +3,5 @@
   "package": "me.coley.recaf.mixin",
   "mixins": [
     "MixinDecompilerManager"
-  ],
-  "target": "env(DEFAULT)"
+  ]
 }

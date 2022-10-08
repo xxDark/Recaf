@@ -1,7 +1,9 @@
 package org.spongepowered.asm.launch;
 
 import org.spongepowered.asm.launch.platform.CommandLineOptions;
-import org.spongepowered.asm.service.MixinService;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+
+import java.lang.reflect.Method;
 
 /**
  * Bridge methods for MixinBootstrap.
@@ -30,7 +32,13 @@ public final class MixinBridge {
 		MixinBootstrap.inject();
 	}
 
-	public static void beginPhase() {
-		MixinService.getService().beginPhase();
+	public static void initEnvironment() {
+		try {
+			Method m = MixinEnvironment.class.getDeclaredMethod("gotoPhase", MixinEnvironment.Phase.class);
+			m.setAccessible(true);
+			m.invoke(null, MixinEnvironment.Phase.DEFAULT);
+		} catch (ReflectiveOperationException ex) {
+			throw new RuntimeException("Failed to enter default phase", ex);
+		}
 	}
 }

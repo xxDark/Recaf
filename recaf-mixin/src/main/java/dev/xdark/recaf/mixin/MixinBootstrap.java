@@ -30,7 +30,7 @@ public final class MixinBootstrap {
 				MixinBridge.start();
 				MixinBridge.doInit(CommandLineOptions.of(args));
 				MixinBridge.inject();
-				MixinBridge.beginPhase();
+				MixinBridge.initEnvironment();
 			} finally {
 				properties.remove(BOOTSTRAP_PROPERTY);
 				properties.remove(SERVICE_PROPERTY);

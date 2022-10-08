@@ -159,7 +159,7 @@ public class EnhancedClassLoader extends URLClassLoader implements ClassLoaderIn
 					if (cs == null || (newDefinition != definition && cs.getCertificates() != null)) {
 						cs = new CodeSource(url, (Certificate[]) null); // Erase certificates
 					}
-					byte[] bytes = definition.getBytecode().readAll();
+					byte[] bytes = newDefinition.getBytecode().readAll();
 					return defineClass(null, bytes, 0, bytes.length, cs);
 				} catch (IOException ex) {
 					throw new ClassNotFoundException(name, ex);
