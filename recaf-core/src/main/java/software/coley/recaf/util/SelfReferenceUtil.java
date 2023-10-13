@@ -151,7 +151,7 @@ public class SelfReferenceUtil {
 
 		try {
 			CodeSource codeSource = context.getProtectionDomain().getCodeSource();
-			File selfFile = new File(codeSource.getLocation().toURI().getPath());
+			File selfFile = Path.of(codeSource.getLocation().toURI()).toFile();
 			instance = new SelfReferenceUtil(selfFile);
 		} catch (URISyntaxException e) {
 			logger.error("Failed to resolve self reference", e);

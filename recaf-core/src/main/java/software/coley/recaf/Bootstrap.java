@@ -48,7 +48,7 @@ public class Bootstrap {
 
 	private static SeContainer createContainer() {
 		logger.info("Creating Recaf CDI container...");
-		Weld weld = new Weld("recaf");
+		Weld weld = new Weld("recaf").setClassLoader(Bootstrap.class.getClassLoader());
 
 		// Setup custom interceptors & extensions
 		logger.info("CDI: Adding interceptors & extensions");
